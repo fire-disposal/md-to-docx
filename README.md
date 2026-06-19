@@ -60,6 +60,7 @@ Add `fire-disposal/md-to-docx` in BRAT plugin settings.
 
 ### UX
 - Ribbon icon + Command palette
+- **English / 简体中文** — auto-detected via Obsidian language setting
 - Auto-open exported file with system default app
 - Configurable output subfolder
 - Silent overwrite (optional)
