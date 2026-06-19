@@ -1,4 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
+import { t } from "./i18n";
 import type MdToDocxPlugin from "../main";
 
 export interface MdToDocxSettings {
@@ -33,19 +34,17 @@ export class MdToDocxSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Markdown to DOCX" });
+    containerEl.createEl("h2", { text: t("pluginName") });
 
-    // --- Export ---
-    containerEl.createEl("h3", { text: "Export" });
+    // ── Export ──
+    containerEl.createEl("h3", { text: t("settingsExport") });
 
     new Setting(containerEl)
-      .setName("Output folder")
-      .setDesc(
-        "Save .docx files to a subfolder (e.g. 'exports'). Leave empty to save next to the note."
-      )
+      .setName(t("settingsOutputFolder"))
+      .setDesc(t("settingsOutputFolderDesc"))
       .addText((text) =>
         text
-          .setPlaceholder("e.g. exports")
+          .setPlaceholder(t("settingsOutputPlaceholder"))
           .setValue(this.plugin.settings.outputFolder)
           .onChange(async (value) => {
             this.plugin.settings.outputFolder = value.replace(/^\/|\/$/g, "");
@@ -54,8 +53,8 @@ export class MdToDocxSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Overwrite existing files")
-      .setDesc("Silently overwrite an existing .docx with the same name.")
+      .setName(t("settingsOverwrite"))
+      .setDesc(t("settingsOverwriteDesc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.overwriteExisting)
@@ -66,8 +65,8 @@ export class MdToDocxSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Open after export")
-      .setDesc("Open the .docx file with the system default application after export.")
+      .setName(t("settingsOpenAfter"))
+      .setDesc(t("settingsOpenAfterDesc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.openAfterExport)
@@ -78,8 +77,8 @@ export class MdToDocxSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Page size")
-      .setDesc("Document page dimensions.")
+      .setName(t("settingsPageSize"))
+      .setDesc(t("settingsPageSizeDesc"))
       .addDropdown((dropdown) =>
         dropdown
           .addOption("A4", "A4")
@@ -91,14 +90,12 @@ export class MdToDocxSettingTab extends PluginSettingTab {
           })
       );
 
-    // --- Images ---
-    containerEl.createEl("h3", { text: "Images" });
+    // ── Images ──
+    containerEl.createEl("h3", { text: t("settingsImages") });
 
     new Setting(containerEl)
-      .setName("Embed images")
-      .setDesc(
-        "Embed referenced local images into the .docx. PNG, JPEG, GIF, BMP, WebP are supported."
-      )
+      .setName(t("settingsEmbedImages"))
+      .setDesc(t("settingsEmbedImagesDesc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.embedImages)
@@ -109,10 +106,8 @@ export class MdToDocxSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Add image captions")
-      .setDesc(
-        "Insert the image alt-text as a caption below each embedded image."
-      )
+      .setName(t("settingsCaptions"))
+      .setDesc(t("settingsCaptionsDesc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.addCaptions)
@@ -123,10 +118,8 @@ export class MdToDocxSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Max image width (inches)")
-      .setDesc(
-        "Scale images down if wider than this. Set to 0 to disable. Default: 6 inches."
-      )
+      .setName(t("settingsMaxWidth"))
+      .setDesc(t("settingsMaxWidthDesc"))
       .addSlider((slider) =>
         slider
           .setLimits(0, 12, 0.5)

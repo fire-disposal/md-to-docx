@@ -1,9 +1,9 @@
 {
   "id": "md-to-docx",
-  "name": "Markdown to DOCX",
+  "name": "MD to DOCX",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
-  "description": "Export the current Markdown note to a .docx file with zero external dependencies.",
+  "description": "Zero-dependency Markdown to DOCX exporter. Handcrafted ZIP/DEFLATE, no Pandoc, no JSZip, no docx library — just 31 KB.",
   "author": "firedisposal",
   "authorUrl": "https://github.com/firedisposal",
   "fundingUrl": "",

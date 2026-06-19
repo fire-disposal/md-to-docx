@@ -23,7 +23,7 @@ __export(main_exports, {
   default: () => MdToDocxPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian2 = require("obsidian");
+var import_obsidian3 = require("obsidian");
 
 // src/docx/parser.ts
 function parseBlocks(md) {
@@ -826,8 +826,88 @@ function extToMime2(ext) {
   return m[ext] || "application/octet-stream";
 }
 
-// src/settings.ts
+// src/i18n.ts
 var import_obsidian = require("obsidian");
+var strings = {
+  en: {
+    pluginName: "MD to DOCX",
+    ribbonTooltip: "Export to DOCX",
+    cmdExport: "Export current note to .docx",
+    cmdExportOverwrite: "Export current note to .docx (overwrite)",
+    noticeNoActive: "No active note.",
+    noticeNotMd: "Active file is not a Markdown note.",
+    noticeExists: "File already exists: ",
+    noticeFolderFail: "Failed to create folder: ",
+    noticeExported: "Exported to ",
+    noticeUpdated: "Updated ",
+    noticeExportFail: "Export failed \u2014 ",
+    settingsExport: "Export",
+    settingsOutputFolder: "Output folder",
+    settingsOutputFolderDesc: "Save .docx files to a subfolder (e.g. 'exports'). Leave empty to save next to the note.",
+    settingsOutputPlaceholder: "e.g. exports",
+    settingsOverwrite: "Overwrite existing files",
+    settingsOverwriteDesc: "Silently overwrite an existing .docx with the same name.",
+    settingsOpenAfter: "Open after export",
+    settingsOpenAfterDesc: "Open the .docx with the system default application after export.",
+    settingsPageSize: "Page size",
+    settingsPageSizeDesc: "Document page dimensions.",
+    settingsImages: "Images",
+    settingsEmbedImages: "Embed images",
+    settingsEmbedImagesDesc: "Embed referenced local images into the .docx. PNG, JPEG, GIF, BMP, WebP are supported.",
+    settingsCaptions: "Add image captions",
+    settingsCaptionsDesc: "Insert the image alt-text as a caption below each embedded image.",
+    settingsMaxWidth: "Max image width (inches)",
+    settingsMaxWidthDesc: "Scale images down if wider than this. Set to 0 to disable."
+  },
+  zh: {
+    pluginName: "MD to DOCX",
+    ribbonTooltip: "\u5BFC\u51FA\u4E3A DOCX",
+    cmdExport: "\u5BFC\u51FA\u5F53\u524D\u7B14\u8BB0\u4E3A .docx",
+    cmdExportOverwrite: "\u5BFC\u51FA\u5F53\u524D\u7B14\u8BB0\u4E3A .docx\uFF08\u8986\u76D6\uFF09",
+    noticeNoActive: "\u6CA1\u6709\u6D3B\u52A8\u7684\u7B14\u8BB0\u3002",
+    noticeNotMd: "\u5F53\u524D\u6587\u4EF6\u4E0D\u662F Markdown \u7B14\u8BB0\u3002",
+    noticeExists: "\u6587\u4EF6\u5DF2\u5B58\u5728\uFF1A",
+    noticeFolderFail: "\u521B\u5EFA\u6587\u4EF6\u5939\u5931\u8D25\uFF1A",
+    noticeExported: "\u5DF2\u5BFC\u51FA\u5230 ",
+    noticeUpdated: "\u5DF2\u66F4\u65B0 ",
+    noticeExportFail: "\u5BFC\u51FA\u5931\u8D25 \u2014 ",
+    settingsExport: "\u5BFC\u51FA",
+    settingsOutputFolder: "\u8F93\u51FA\u76EE\u5F55",
+    settingsOutputFolderDesc: "\u5C06 .docx \u4FDD\u5B58\u5230\u5B50\u76EE\u5F55\uFF08\u5982 'exports'\uFF09\u3002\u7559\u7A7A\u5219\u4FDD\u5B58\u5230\u7B14\u8BB0\u540C\u76EE\u5F55\u3002",
+    settingsOutputPlaceholder: "\u5982 exports",
+    settingsOverwrite: "\u81EA\u52A8\u8986\u76D6\u540C\u540D\u6587\u4EF6",
+    settingsOverwriteDesc: "\u9759\u9ED8\u8986\u76D6\u5DF2\u5B58\u5728\u7684\u540C\u540D .docx \u6587\u4EF6\u3002",
+    settingsOpenAfter: "\u5BFC\u51FA\u540E\u6253\u5F00",
+    settingsOpenAfterDesc: "\u5BFC\u51FA\u540E\u4F7F\u7528\u7CFB\u7EDF\u9ED8\u8BA4\u7A0B\u5E8F\u6253\u5F00 .docx \u6587\u4EF6\u3002",
+    settingsPageSize: "\u9875\u9762\u5C3A\u5BF8",
+    settingsPageSizeDesc: "\u6587\u6863\u9875\u9762\u5C3A\u5BF8\u3002",
+    settingsImages: "\u56FE\u7247",
+    settingsEmbedImages: "\u5D4C\u5165\u56FE\u7247",
+    settingsEmbedImagesDesc: "\u5C06\u7B14\u8BB0\u4E2D\u5F15\u7528\u7684\u672C\u5730\u56FE\u7247\u5D4C\u5165 .docx\u3002\u652F\u6301 PNG\u3001JPEG\u3001GIF\u3001BMP\u3001WebP\u3002",
+    settingsCaptions: "\u6DFB\u52A0\u56FE\u7247\u9898\u6CE8",
+    settingsCaptionsDesc: "\u5728\u6BCF\u5F20\u5D4C\u5165\u56FE\u7247\u4E0B\u65B9\u63D2\u5165\u9898\u6CE8\uFF08\u53D6\u81EA\u56FE\u7247 alt \u6587\u672C\uFF09\u3002",
+    settingsMaxWidth: "\u56FE\u7247\u6700\u5927\u5BBD\u5EA6\uFF08\u82F1\u5BF8\uFF09",
+    settingsMaxWidthDesc: "\u8D85\u8FC7\u6B64\u5BBD\u5EA6\u7684\u56FE\u7247\u7B49\u6BD4\u7F29\u5C0F\u3002\u8BBE\u4E3A 0 \u5219\u4E0D\u9650\u5236\u3002"
+  }
+};
+function t(key) {
+  let lang = "en";
+  try {
+    const detected = (0, import_obsidian.getLanguage)();
+    if (detected && strings[detected]) {
+      lang = detected;
+    } else if (detected?.includes("-")) {
+      const base = detected.split("-")[0];
+      if (strings[base])
+        lang = base;
+    }
+  } catch {
+  }
+  return strings[lang]?.[key] ?? strings.en[key] ?? key;
+}
+
+// src/settings.ts
+var import_obsidian2 = require("obsidian");
 var DEFAULT_SETTINGS = {
   overwriteExisting: true,
   embedImages: true,
@@ -837,7 +917,7 @@ var DEFAULT_SETTINGS = {
   openAfterExport: true,
   imageMaxWidth: 6
 };
-var MdToDocxSettingTab = class extends import_obsidian.PluginSettingTab {
+var MdToDocxSettingTab = class extends import_obsidian2.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -845,54 +925,46 @@ var MdToDocxSettingTab = class extends import_obsidian.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Markdown to DOCX" });
-    containerEl.createEl("h3", { text: "Export" });
-    new import_obsidian.Setting(containerEl).setName("Output folder").setDesc(
-      "Save .docx files to a subfolder (e.g. 'exports'). Leave empty to save next to the note."
-    ).addText(
-      (text) => text.setPlaceholder("e.g. exports").setValue(this.plugin.settings.outputFolder).onChange(async (value) => {
+    containerEl.createEl("h2", { text: t("pluginName") });
+    containerEl.createEl("h3", { text: t("settingsExport") });
+    new import_obsidian2.Setting(containerEl).setName(t("settingsOutputFolder")).setDesc(t("settingsOutputFolderDesc")).addText(
+      (text) => text.setPlaceholder(t("settingsOutputPlaceholder")).setValue(this.plugin.settings.outputFolder).onChange(async (value) => {
         this.plugin.settings.outputFolder = value.replace(/^\/|\/$/g, "");
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Overwrite existing files").setDesc("Silently overwrite an existing .docx with the same name.").addToggle(
+    new import_obsidian2.Setting(containerEl).setName(t("settingsOverwrite")).setDesc(t("settingsOverwriteDesc")).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.overwriteExisting).onChange(async (value) => {
         this.plugin.settings.overwriteExisting = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Open after export").setDesc("Open the .docx file with the system default application after export.").addToggle(
+    new import_obsidian2.Setting(containerEl).setName(t("settingsOpenAfter")).setDesc(t("settingsOpenAfterDesc")).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.openAfterExport).onChange(async (value) => {
         this.plugin.settings.openAfterExport = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Page size").setDesc("Document page dimensions.").addDropdown(
+    new import_obsidian2.Setting(containerEl).setName(t("settingsPageSize")).setDesc(t("settingsPageSizeDesc")).addDropdown(
       (dropdown) => dropdown.addOption("A4", "A4").addOption("Letter", "Letter").setValue(this.plugin.settings.pageSize).onChange(async (value) => {
         this.plugin.settings.pageSize = value;
         await this.plugin.saveSettings();
       })
     );
-    containerEl.createEl("h3", { text: "Images" });
-    new import_obsidian.Setting(containerEl).setName("Embed images").setDesc(
-      "Embed referenced local images into the .docx. PNG, JPEG, GIF, BMP, WebP are supported."
-    ).addToggle(
+    containerEl.createEl("h3", { text: t("settingsImages") });
+    new import_obsidian2.Setting(containerEl).setName(t("settingsEmbedImages")).setDesc(t("settingsEmbedImagesDesc")).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.embedImages).onChange(async (value) => {
         this.plugin.settings.embedImages = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Add image captions").setDesc(
-      "Insert the image alt-text as a caption below each embedded image."
-    ).addToggle(
+    new import_obsidian2.Setting(containerEl).setName(t("settingsCaptions")).setDesc(t("settingsCaptionsDesc")).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.addCaptions).onChange(async (value) => {
         this.plugin.settings.addCaptions = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Max image width (inches)").setDesc(
-      "Scale images down if wider than this. Set to 0 to disable. Default: 6 inches."
-    ).addSlider(
+    new import_obsidian2.Setting(containerEl).setName(t("settingsMaxWidth")).setDesc(t("settingsMaxWidthDesc")).addSlider(
       (slider) => slider.setLimits(0, 12, 0.5).setValue(this.plugin.settings.imageMaxWidth).setDynamicTooltip().onChange(async (value) => {
         this.plugin.settings.imageMaxWidth = value;
         await this.plugin.saveSettings();
@@ -902,24 +974,24 @@ var MdToDocxSettingTab = class extends import_obsidian.PluginSettingTab {
 };
 
 // main.ts
-var MdToDocxPlugin = class extends import_obsidian2.Plugin {
+var MdToDocxPlugin = class extends import_obsidian3.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
   }
   async onload() {
     await this.loadSettings();
-    this.addRibbonIcon("file-down", "Export to DOCX", () => {
+    this.addRibbonIcon("file-down", t("ribbonTooltip"), () => {
       this.exportCurrentNote();
     });
     this.addCommand({
       id: "export-current-note-to-docx",
-      name: "Export current note to .docx",
+      name: t("cmdExport"),
       callback: () => this.exportCurrentNote()
     });
     this.addCommand({
       id: "export-current-note-to-docx-overwrite",
-      name: "Export current note to .docx (overwrite)",
+      name: t("cmdExportOverwrite"),
       callback: () => this.exportCurrentNote(true)
     });
     this.addSettingTab(new MdToDocxSettingTab(this.app, this));
@@ -935,11 +1007,11 @@ var MdToDocxPlugin = class extends import_obsidian2.Plugin {
   async exportCurrentNote(forceOverwrite = false) {
     const file = this.app.workspace.getActiveFile();
     if (!file) {
-      new import_obsidian2.Notice("No active note");
+      new import_obsidian3.Notice(t("noticeNoActive"));
       return;
     }
     if (file.extension !== "md") {
-      new import_obsidian2.Notice("The active file is not a Markdown note.");
+      new import_obsidian3.Notice(t("noticeNotMd"));
       return;
     }
     const outPath = this.getOutputPath(file);
@@ -948,13 +1020,13 @@ var MdToDocxPlugin = class extends import_obsidian2.Plugin {
       try {
         await this.app.vault.createFolder(folderPath);
       } catch {
-        new import_obsidian2.Notice(`Failed to create folder: ${folderPath}`);
+        new import_obsidian3.Notice(t("noticeFolderFail") + folderPath);
         return;
       }
     }
     if (!forceOverwrite && !this.settings.overwriteExisting) {
       if (await this.app.vault.adapter.exists(outPath)) {
-        new import_obsidian2.Notice(`File already exists: ${outPath}`);
+        new import_obsidian3.Notice(t("noticeExists") + outPath);
         return;
       }
     }
@@ -974,9 +1046,9 @@ var MdToDocxPlugin = class extends import_obsidian2.Plugin {
       if (forceOverwrite || this.settings.overwriteExisting) {
         if (await this.app.vault.adapter.exists(outPath)) {
           const existing = this.app.vault.getAbstractFileByPath(outPath);
-          if (existing instanceof import_obsidian2.TFile) {
+          if (existing instanceof import_obsidian3.TFile) {
             await this.app.vault.modifyBinary(existing, docxBuffer);
-            new import_obsidian2.Notice(`Updated ${outPath}`);
+            new import_obsidian3.Notice(t("noticeUpdated") + outPath);
             if (this.settings.openAfterExport) {
               this.openWithDefaultApp(outPath);
             }
@@ -985,20 +1057,19 @@ var MdToDocxPlugin = class extends import_obsidian2.Plugin {
         }
       }
       await this.app.vault.createBinary(outPath, docxBuffer);
-      new import_obsidian2.Notice(`Exported to ${outPath}`);
+      new import_obsidian3.Notice(t("noticeExported") + outPath);
       if (this.settings.openAfterExport) {
         this.openWithDefaultApp(outPath);
       }
     } catch (e) {
-      new import_obsidian2.Notice(`Export failed \u2014 ${e}`);
+      new import_obsidian3.Notice(t("noticeExportFail") + e);
     }
   }
   getOutputPath(file) {
     const base = file.path.replace(/\.md$/, ".docx");
     const name = base.substring(base.lastIndexOf("/") + 1);
     if (this.settings.outputFolder) {
-      const folder = this.settings.outputFolder;
-      return `${folder}/${name}`;
+      return `${this.settings.outputFolder}/${name}`;
     }
     const parent = file.parent?.path;
     if (parent) {

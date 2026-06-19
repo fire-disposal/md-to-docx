@@ -1,6 +1,7 @@
 import { Notice, Plugin, TFile } from "obsidian";
 import { markdownToDocx, PAGE_A4, PAGE_LETTER } from "./src/docx";
 import { resolveImages } from "./src/images";
+import { t } from "./src/i18n";
 import {
   MdToDocxSettingTab,
   MdToDocxSettings,
@@ -13,19 +14,19 @@ export default class MdToDocxPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    this.addRibbonIcon("file-down", "Export to DOCX", () => {
+    this.addRibbonIcon("file-down", t("ribbonTooltip"), () => {
       this.exportCurrentNote();
     });
 
     this.addCommand({
       id: "export-current-note-to-docx",
-      name: "Export current note to .docx",
+      name: t("cmdExport"),
       callback: () => this.exportCurrentNote(),
     });
 
     this.addCommand({
       id: "export-current-note-to-docx-overwrite",
-      name: "Export current note to .docx (overwrite)",
+      name: t("cmdExportOverwrite"),
       callback: () => this.exportCurrentNote(true),
     });
 
@@ -45,31 +46,30 @@ export default class MdToDocxPlugin extends Plugin {
   async exportCurrentNote(forceOverwrite = false) {
     const file = this.app.workspace.getActiveFile();
     if (!file) {
-      new Notice("No active note");
+      new Notice(t("noticeNoActive"));
       return;
     }
 
     if (file.extension !== "md") {
-      new Notice("The active file is not a Markdown note.");
+      new Notice(t("noticeNotMd"));
       return;
     }
 
     const outPath = this.getOutputPath(file);
 
-    // Ensure output folder exists
     const folderPath = outPath.substring(0, outPath.lastIndexOf("/"));
     if (folderPath && !(await this.app.vault.adapter.exists(folderPath))) {
       try {
         await this.app.vault.createFolder(folderPath);
       } catch {
-        new Notice(`Failed to create folder: ${folderPath}`);
+        new Notice(t("noticeFolderFail") + folderPath);
         return;
       }
     }
 
     if (!forceOverwrite && !this.settings.overwriteExisting) {
       if (await this.app.vault.adapter.exists(outPath)) {
-        new Notice(`File already exists: ${outPath}`);
+        new Notice(t("noticeExists") + outPath);
         return;
       }
     }
@@ -99,7 +99,7 @@ export default class MdToDocxPlugin extends Plugin {
           const existing = this.app.vault.getAbstractFileByPath(outPath);
           if (existing instanceof TFile) {
             await this.app.vault.modifyBinary(existing, docxBuffer);
-            new Notice(`Updated ${outPath}`);
+            new Notice(t("noticeUpdated") + outPath);
             if (this.settings.openAfterExport) {
               this.openWithDefaultApp(outPath);
             }
@@ -109,13 +109,13 @@ export default class MdToDocxPlugin extends Plugin {
       }
 
       await this.app.vault.createBinary(outPath, docxBuffer);
-      new Notice(`Exported to ${outPath}`);
+      new Notice(t("noticeExported") + outPath);
 
       if (this.settings.openAfterExport) {
         this.openWithDefaultApp(outPath);
       }
     } catch (e) {
-      new Notice(`Export failed — ${e}`);
+      new Notice(t("noticeExportFail") + e);
     }
   }
 
@@ -123,8 +123,7 @@ export default class MdToDocxPlugin extends Plugin {
     const base = file.path.replace(/\.md$/, ".docx");
     const name = base.substring(base.lastIndexOf("/") + 1);
     if (this.settings.outputFolder) {
-      const folder = this.settings.outputFolder;
-      return `${folder}/${name}`;
+      return `${this.settings.outputFolder}/${name}`;
     }
     const parent = file.parent?.path;
     if (parent) {
@@ -142,7 +141,7 @@ export default class MdToDocxPlugin extends Plugin {
       const { shell } = require("electron");
       shell.openPath(fullPath);
     } catch {
-      // Silently fail — Electron shell may not be available
+      // Electron shell unavailable — not a desktop environment
     }
   }
 }
