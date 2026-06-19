@@ -1,0 +1,11 @@
+{
+  "id": "md-to-docx",
+  "name": "Markdown to DOCX",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Export the current Markdown note to a .docx file with zero external dependencies.",
+  "author": "firedisposal",
+  "authorUrl": "https://github.com/firedisposal",
+  "fundingUrl": "",
+  "isDesktopOnly": true
+}
