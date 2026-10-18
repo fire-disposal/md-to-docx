@@ -1,114 +1,61 @@
-# MD to DOCX
+# md-to-docx
 
-> Zero-dependency Markdown → DOCX exporter for Obsidian.  
-> No Pandoc. No JSZip. No docx library. Just 31 KB of handcrafted ZIP + XML.
+在 Obsidian 里把笔记导成 .docx，给不想为一次导出装 Pandoc 或 LibreOffice 的人；插件可用，还没进社区插件市场。
 
-**Verified on:** Arch Linux, Windows 11 · Obsidian ≥ 0.15.0
+**状态**：可用（v1.0.0，桌面端，Obsidian ≥ 0.15.0）；**入口**：命令面板「Export current note to .docx」/ 侧栏图标；**仓库**：[fire-disposal/md-to-docx](https://github.com/fire-disposal/md-to-docx)
 
-[中文说明](#中文说明) | [Installation](#installation) | [Features](#features) | [Settings](#settings)
+## 本质
 
-## Why This Exists
+在 Obsidian 里通过 XML 快速拼出无格式 DOCX 的临时 MD→DOCX 插件。
 
-Most Markdown → DOCX solutions require Pandoc, LibreOffice, or heavy npm packages (`jszip` + `docx`). This plugin does everything from scratch:
+## 选型
 
-- **Handcrafted ZIP packer** with DEFLATE compression (RFC 1951)
-- **CRC-32** checksums computed inline
-- **WordprocessingML XML** generated directly — no DOM builder
-- **Zero runtime dependencies** — uses only Node.js built-in `zlib`
+基于 TypeScript + esbuild 的 Obsidian 桌面插件，零运行时依赖，压缩用 Node zlib，产物单个 CJS main.js。
 
-The entire plugin is **31 KB** (built). It runs instantly, nowhere to break.
+- 运行时
+  - Obsidian API
+    - vault
+    - metadataCache
+    - electron.shell
+- 语言与构建
+  - TypeScript 5
+  - esbuild
+- DOCX
+  - ZIP 容器
+  - Node zlib
+  - WordprocessingML
+- 质量
+  - GitHub Actions
 
-## Installation
+## 功能
 
-### From Community Plugins (once approved)
-Search "MD to DOCX" in Obsidian → Community Plugins → Install.
+- 块级：H1–H6、段落、无序/有序/任务列表、引用、围栏代码、表格、分隔线、图片
+- 行内：粗体、斜体、粗斜体、删除线、`==高亮==`、行内代码、链接文字、wikilink 显示文字
+- 图片：嵌入 vault 内 png / jpg / jpeg / gif / bmp / webp；PNG 与 GIF 读头取真实尺寸，超宽按比例缩小；可选把 alt 写成 Caption 题注；找不到文件时输出 `[Image: alt]` 占位
+- 页面：A4 或 Letter、1 英寸四边距；可配置输出子目录、静默覆盖、导出后自动打开
+- 命令：普通导出、强制覆盖导出；中英界面跟随 Obsidian 语言设置
+- 简化版：列表是「前缀 + 悬挂缩进」，缩进 4 空格以上的子项会掉成普通段落；链接只留显示文字，URL 不写进 relationship；代码逐行 Courier New，无底纹与语法高亮；表格按列数均分，表头不跨页重复
+- 未完成：没有单测，`REVIEW.md` 只是人工自检清单；WebP 只按扩展名与内容类型打包，Word 的显示支持并不一致
 
-### Manual
-```bash
-git clone https://github.com/fire-disposal/md-to-docx.git
-cd md-to-docx
-npm install && npm run build
-# Copy md-to-docx/ folder to .obsidian/plugins/
-```
-
-### BRAT (beta testing)
-Add `fire-disposal/md-to-docx` in BRAT plugin settings.
-
-## Features
-
-### Markdown → DOCX mapping
-
-| Markdown | DOCX |
-|----------|------|
-| `#` ~ `######` | `Heading1` ~ `Heading6` |
-| `**bold**` / `*italic*` / `***both***` | `<w:b/>` / `<w:i/>` / both |
-| `~~strikethrough~~` | `<w:strike/>` |
-| `==highlight==` | `<w:highlight/>` |
-| `` `code` `` / ` ```fenced``` ` | Courier New monospace |
-| `- list` / `1. ordered` / `- [ ] task` | Bullet / Numbered / ☐☑ |
-| `> blockquote` | Indented paragraph |
-| `---` horizontal rule | Bottom border |
-| `[link](url)` / `[[wikilink]]` | Hyperlink style |
-| `![image](path)` / `![[image]]` | Embedded image |
-| `| table |` | DOCX table with borders |
-| Caption | `Caption` style below image |
-
-### Images
-- Embed local PNG/JPEG/GIF/BMP/WebP images into the DOCX
-- Auto-detects PNG/GIF dimensions; scales down to configurable max width
-- Wiki links (`![[image.png]]`) resolved via Obsidian's metadata cache
-
-### UX
-- Ribbon icon + Command palette
-- **English / 简体中文** — auto-detected via Obsidian language setting
-- Auto-open exported file with system default app
-- Configurable output subfolder
-- Silent overwrite (optional)
-
-## Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Output folder | *(empty)* | Save to a subfolder (e.g. `exports`) |
-| Overwrite existing | ON | Silently overwrite |
-| Open after export | ON | Open with system default app |
-| Page size | A4 | A4 or Letter |
-| Embed images | ON | Embed local images |
-| Add image captions | ON | Alt-text as caption |
-| Max image width | 6 in | Scale down if wider |
-
-## Development
+## 启动流程
 
 ```bash
 npm install
-npm run dev      # Watch mode
-npm run build    # Type-check + production build
-npm run dist     # Build + deploy to vault
+npm run dev      # esbuild watch，产物写到 md-to-docx/main.js
+npm run build    # tsc --noEmit + esbuild production
+npm run dist     # build 后按 OBSIDIAN_VAULT 复制进 vault
 ```
 
-Set `OBSIDIAN_VAULT` environment variable for `npm run dist` auto-deployment.
+手动安装：把 `md-to-docx/`（`main.js`、`manifest.json`、`styles.css`）放进 `<vault>/.obsidian/plugins/md-to-docx/`，在设置的第三方插件里启用。
 
-## License
+## 边界与已知问题
 
-MIT
+- 桌面端限定：`isDesktopOnly: true`，打开文件依赖 `electron.shell.openPath`。
+- 未上市场：README 里还写着 “once approved”，现在只能 BRAT 或手动装。
+- 构建产物实际 38281 字节（约 38 KB），旧 README 与 manifest 里的 31 KB 已过期。
+- 不支持脚注、数学公式、callout、Mermaid、`![[笔记]]` 这类嵌入、PDF、页眉页脚、目录。
+- 表格单元格内再套行内代码或多层强调，样式会叠成一个 run，效果不一定对。
 
----
+## 文档索引
 
-## 中文说明
-
-零依赖的 Obsidian Markdown → DOCX 导出插件。不依赖 Pandoc、JSZip、docx 等第三方库，仅使用 Node.js 内置 `zlib`，纯手写 ZIP 打包 + XML 生成。
-
-**已验证平台：** Arch Linux、Windows 11 · Obsidian ≥ 0.15.0
-
-### 与竞品差异
-
-| | obsidian-docx-exporter | 本插件 |
-|---|---|---|
-| 运行时依赖 | JSZip + docx 库 | **零** |
-| 体积 | 较大 | **31 KB** |
-| 表格 | ? | ✅ |
-| 题注 | ❌ | ✅ |
-| 页面尺寸 | ? | ✅ A4/Letter |
-| 导出后打开 | ❌ | ✅ |
-| 图片宽度约束 | ? | ✅ |
-| 许可 | LGPL-2.1 | MIT |
+- [REVIEW.md](REVIEW.md) — 社区插件审核自检
